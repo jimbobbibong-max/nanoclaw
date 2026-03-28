@@ -169,12 +169,12 @@ export class DiscordChannel implements Channel {
     });
 
     // Handle errors gracefully
-    this.client.on(Events.Error, (err) => {
+    this.client.on(Events.Error, (err: any) => {
       logger.error({ err: err.message }, 'Discord client error');
     });
 
     return new Promise<void>((resolve) => {
-      this.client!.once(Events.ClientReady, (readyClient) => {
+      this.client!.once(Events.ClientReady, (readyClient: any) => {
         logger.info(
           { username: readyClient.user.tag, id: readyClient.user.id },
           'Discord bot connected',
