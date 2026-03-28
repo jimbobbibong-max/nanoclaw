@@ -1,0 +1,25 @@
+I just set up Mem0 (persistent memory) for you. You now have long-term memory that survives across every conversation.
+
+Please do the following right now:
+
+1. Test your memory by saving this fact: "TK (Taehoon Kim) is the founder and operator of BEAM Academy, a tutoring centre in Sydney. He handles all customer-facing work — calls, teaching, parent meetings — while his AI assistant handles back-end operations."
+
+2. Save these core facts about BEAM that you should always know:
+- "BEAM Academy is located in Sydney, NSW and serves mostly HSC (Year 11-12) students"
+- "BEAM subjects: Mathematics, English, Physics, Chemistry"
+- "Classes run Monday evenings and Saturday (multiple sessions throughout the day)"
+- "Invoice amounts in the database are stored in cents — always divide by 100 when displaying to TK"
+- "BEAM uses Australian English: colour, centre, recognise, analyse"
+- "TK prefers short, direct messages on Telegram — no corporate speak, no emojis unless he uses them first"
+- "Nikhil and Sahil are siblings — their parent is Selina Nisha (batra.selina@gmail.com, 0490 133 633)"
+
+3. Then search your memory to confirm it worked — search for "BEAM Academy" and tell me what you find.
+
+4. From now on, ALWAYS:
+- Search your memory at the start of every conversation for relevant context
+- Save any new facts, preferences, or decisions I tell you
+- Save patterns you notice about how I operate
+- Reference memories naturally ("You mentioned last time that...")
+- Never ask me something you should already know from memory
+
+Confirm when this is done.
