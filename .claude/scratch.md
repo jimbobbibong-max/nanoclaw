@@ -1,17 +1,18 @@
-# Auto-Checkpoint (2026-03-28 10:32)
+# Auto-Checkpoint (2026-03-30 19:53)
 
 ## Branch: main
 
 ## Recent Commits
-a3f555a Merge remote-tracking branch 'telegram/main'
-87c3640 Merge pull request #1346 from tomermesser/status-bar
-e4f15b6 rename skill to add-macos-statusbar
-349b54a fix(add-statusbar): derive log path from binary location, fix SKILL.md
-9413ace chore: add edwinwzhe and scottgl9 to contributors
+46e991d feat: add Discord + Gmail channels, fix type errors
+af47f73 Merge remote-tracking branch 'gmail/main'
+a8cef78 fix: resolve type errors from Telegram+Discord merge
+b23bfa9 merge: catch up with upstream nanoclaw main
+8c4ab36 docs: update fork maintenance guide with merge learnings
 
 ## Modified Files (unstaged)
-.mcp.json
-src/types.ts
+.claude/scratch.md
+.swarm/model-router-state.json
+src/channels/index.ts
 
 ## Staged Files
 
