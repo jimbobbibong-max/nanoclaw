@@ -253,6 +253,12 @@ async function buildContainerArgs(
   });
   if (onecliApplied) {
     logger.info({ containerName }, 'OneCLI gateway config applied');
+  } else if (process.env.ANTHROPIC_API_KEY) {
+    args.push('-e', `ANTHROPIC_API_KEY=${process.env.ANTHROPIC_API_KEY}`);
+    logger.info(
+      { containerName },
+      'OneCLI not reachable — falling back to ANTHROPIC_API_KEY env var',
+    );
   } else {
     logger.warn(
       { containerName },
