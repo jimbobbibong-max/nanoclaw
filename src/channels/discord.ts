@@ -101,7 +101,9 @@ export class DiscordChannel implements Channel {
           const contentType = att.contentType || '';
           if (contentType.startsWith('image/')) {
             // Try to download and process image for vision
-            const group = att.url ? this.opts.registeredGroups()[chatJid] : undefined;
+            const group = att.url
+              ? this.opts.registeredGroups()[chatJid]
+              : undefined;
             if (group && att.url) {
               try {
                 const response = await fetch(att.url);
@@ -111,12 +113,20 @@ export class DiscordChannel implements Channel {
                 const processed = await processImage(buffer, groupDir, caption);
                 if (processed) {
                   attachmentDescriptions.push(processed.content);
-                  logger.info({ chatJid, file: processed.relativePath }, 'Discord image processed');
+                  logger.info(
+                    { chatJid, file: processed.relativePath },
+                    'Discord image processed',
+                  );
                 } else {
-                  attachmentDescriptions.push(`[Image: ${att.name || 'image'}]`);
+                  attachmentDescriptions.push(
+                    `[Image: ${att.name || 'image'}]`,
+                  );
                 }
               } catch (err) {
-                logger.warn({ chatJid, err }, 'Failed to process Discord image, using placeholder');
+                logger.warn(
+                  { chatJid, err },
+                  'Failed to process Discord image, using placeholder',
+                );
                 attachmentDescriptions.push(`[Image: ${att.name || 'image'}]`);
               }
             } else {

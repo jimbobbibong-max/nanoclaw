@@ -218,7 +218,13 @@ export class TelegramChannel implements Channel {
 
       const isGroup =
         ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
-      this.opts.onChatMetadata(chatJid, timestamp, undefined, 'telegram', isGroup);
+      this.opts.onChatMetadata(
+        chatJid,
+        timestamp,
+        undefined,
+        'telegram',
+        isGroup,
+      );
 
       // Get the largest photo size (last in array)
       const photos = ctx.message.photo;
@@ -234,10 +240,16 @@ export class TelegramChannel implements Channel {
         const processed = await processImage(buffer, groupDir, caption);
         if (processed) {
           content = processed.content;
-          logger.info({ chatJid, file: processed.relativePath }, 'Telegram photo processed');
+          logger.info(
+            { chatJid, file: processed.relativePath },
+            'Telegram photo processed',
+          );
         }
       } catch (err) {
-        logger.warn({ chatJid, err }, 'Failed to process Telegram photo, using placeholder');
+        logger.warn(
+          { chatJid, err },
+          'Failed to process Telegram photo, using placeholder',
+        );
       }
 
       this.opts.onMessage(chatJid, {

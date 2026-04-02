@@ -252,7 +252,10 @@ async function buildContainerArgs(
     const isStudentDm = /-20\d{2}$/.test(agentIdentifier);
     const model = isStudentDm ? 'claude-opus-4-6' : 'claude-sonnet-4-6';
     args.push('-e', `CLAUDE_MODEL=${model}`);
-    logger.info({ containerName, agentIdentifier, model }, 'Model routing applied');
+    logger.info(
+      { containerName, agentIdentifier, model },
+      'Model routing applied',
+    );
   }
 
   // OneCLI gateway handles credential injection — containers never see real secrets.
