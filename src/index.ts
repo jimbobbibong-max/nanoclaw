@@ -13,6 +13,7 @@ import {
   ONECLI_URL,
   POLL_INTERVAL,
   SESSION_TTL_SECONDS,
+  TELEGRAM_BOT_POOL,
   TIMEZONE,
 } from './config.js';
 import './channels/index.js';
@@ -20,6 +21,7 @@ import {
   getChannelFactory,
   getRegisteredChannelNames,
 } from './channels/registry.js';
+import { initBotPool } from './channels/telegram.js';
 import {
   ContainerOutput,
   runContainerAgent,
@@ -780,6 +782,10 @@ async function main(): Promise<void> {
   if (channels.length === 0) {
     logger.fatal('No channels connected');
     process.exit(1);
+  }
+
+  if (TELEGRAM_BOT_POOL.length > 0) {
+    await initBotPool(TELEGRAM_BOT_POOL);
   }
 
   // Start subsystems (independently of connection handler)

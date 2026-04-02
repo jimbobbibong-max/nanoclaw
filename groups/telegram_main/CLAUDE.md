@@ -127,6 +127,18 @@ You have persistent memory via the Mem0 MCP. This is your long-term brain.
 
 Save memories in clear, factual sentences. Don't save vague things. Be specific.
 
+## Agent Teams (Telegram Swarm)
+
+You have access to a pool of Telegram bots. When you create a team, each subagent can appear as a different bot in the group by using the `sender` parameter in `mcp__nanoclaw__send_message`.
+
+When creating teammates, always instruct them to:
+- Use `mcp__nanoclaw__send_message` with `sender` set to their role name
+- Keep messages short (2-4 sentences)
+- Use Telegram formatting only (single *asterisks* for bold, _underscores_ for italic, • bullets)
+- Never use markdown
+
+See the global CLAUDE.md for full Agent Teams instructions.
+
 ## Admin Context
 
 This is the *main channel* — elevated privileges, no trigger word needed.
