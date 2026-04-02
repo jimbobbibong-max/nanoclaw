@@ -16,6 +16,8 @@ import {
   OnInboundMessage,
   RegisteredGroup,
 } from '../types.js';
+import { processImage } from '../image.js';
+import { resolveGroupFolderPath } from '../group-folder.js';
 
 export interface DiscordChannelOpts {
   onMessage: OnInboundMessage;
@@ -92,22 +94,42 @@ export class DiscordChannel implements Channel {
         }
       }
 
-      // Handle attachments — store placeholders so the agent knows something was sent
+      // Handle attachments — download images for vision, store placeholders for others
       if (message.attachments.size > 0) {
-        const attachmentDescriptions = [...message.attachments.values()].map(
-          (att) => {
-            const contentType = att.contentType || '';
-            if (contentType.startsWith('image/')) {
-              return `[Image: ${att.name || 'image'}]`;
-            } else if (contentType.startsWith('video/')) {
-              return `[Video: ${att.name || 'video'}]`;
-            } else if (contentType.startsWith('audio/')) {
-              return `[Audio: ${att.name || 'audio'}]`;
+        const attachmentDescriptions: string[] = [];
+        for (const att of message.attachments.values()) {
+          const contentType = att.contentType || '';
+          if (contentType.startsWith('image/')) {
+            // Try to download and process image for vision
+            const group = att.url ? this.opts.registeredGroups()[chatJid] : undefined;
+            if (group && att.url) {
+              try {
+                const response = await fetch(att.url);
+                const buffer = Buffer.from(await response.arrayBuffer());
+                const groupDir = resolveGroupFolderPath(group.folder);
+                const caption = att.name || '';
+                const processed = await processImage(buffer, groupDir, caption);
+                if (processed) {
+                  attachmentDescriptions.push(processed.content);
+                  logger.info({ chatJid, file: processed.relativePath }, 'Discord image processed');
+                } else {
+                  attachmentDescriptions.push(`[Image: ${att.name || 'image'}]`);
+                }
+              } catch (err) {
+                logger.warn({ chatJid, err }, 'Failed to process Discord image, using placeholder');
+                attachmentDescriptions.push(`[Image: ${att.name || 'image'}]`);
+              }
             } else {
-              return `[File: ${att.name || 'file'}]`;
+              attachmentDescriptions.push(`[Image: ${att.name || 'image'}]`);
             }
-          },
-        );
+          } else if (contentType.startsWith('video/')) {
+            attachmentDescriptions.push(`[Video: ${att.name || 'video'}]`);
+          } else if (contentType.startsWith('audio/')) {
+            attachmentDescriptions.push(`[Audio: ${att.name || 'audio'}]`);
+          } else {
+            attachmentDescriptions.push(`[File: ${att.name || 'file'}]`);
+          }
+        }
         if (content) {
           content = `${content}\n${attachmentDescriptions.join('\n')}`;
         } else {

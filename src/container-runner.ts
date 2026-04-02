@@ -43,6 +43,7 @@ export interface ContainerInput {
   isMain: boolean;
   isScheduledTask?: boolean;
   assistantName?: string;
+  imageAttachments?: Array<{ relativePath: string; mediaType: string }>;
   script?: string;
 }
 
@@ -244,6 +245,15 @@ async function buildContainerArgs(
 
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);
+
+  // Model routing: student DM groups get Opus, everything else gets Sonnet.
+  // Student DMs have folder names matching discord_*-2028 (e.g. discord_alice-2028).
+  if (agentIdentifier) {
+    const isStudentDm = /-20\d{2}$/.test(agentIdentifier);
+    const model = isStudentDm ? 'claude-opus-4-6' : 'claude-sonnet-4-6';
+    args.push('-e', `CLAUDE_MODEL=${model}`);
+    logger.info({ containerName, agentIdentifier, model }, 'Model routing applied');
+  }
 
   // OneCLI gateway handles credential injection — containers never see real secrets.
   // The gateway intercepts HTTPS traffic and injects API keys or OAuth tokens.

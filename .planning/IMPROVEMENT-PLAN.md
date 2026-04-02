@@ -76,25 +76,92 @@ Based on: 17 research agents across 2 sessions
 - Student engagement monitor (Wednesday 9am)
 - Discord activity digest (daily 8pm)
 
-## Tier 3: Next Sprint
+## Tier 3: Next Sprint — COMPLETE: [x]
 
-### 3.1 Model routing via OneCLI
-- Route student DMs to Opus (higher quality 1-on-1 tutoring)
-- Route group channels to Sonnet (cost-efficient for chat)
-- agentIdentifier wiring already exists in container-runner
+### 3.1 Install add-image-vision skill
+- Students photograph worksheets, diagrams, and worked problems
+- Major tutoring feature — unlocks visual Q&A
+- `git fetch upstream skill/add-image-vision && git merge upstream/skill/add-image-vision`
+- Requires container rebuild (image processing deps)
 
-### 3.2 Install add-image-vision
-- Students photograph worksheets and diagrams
-- Major tutoring feature
+### 3.2 Install OneCLI on Mac Mini + model routing
+- Install: `curl -fsSL onecli.sh/install | sh && curl -fsSL onecli.sh/cli/install | sh`
+- Configure: `onecli config set api-host http://127.0.0.1:10254`
+- Register credential: `onecli secrets create --name Anthropic --type anthropic --value <key> --host-pattern api.anthropic.com`
+- Set up per-agent model routing: student DMs → Opus, group channels → Sonnet
+- agentIdentifier wiring already exists in container-runner.ts
 
-### 3.3 Agent Swarm on Telegram
-- Separate bot identities per subject/role
-- Cleaner UX for multi-subject operations
+### 3.3 Document OpenClaw/NanoClaw boundary
+- Write groups/telegram_main/memory/system-architecture.md
+- OpenClaw: heartbeats (30min), proactive monitoring, Gmail hooks, ops alerts
+- NanoClaw: channel runtime (Telegram, Discord, Gmail), student interaction, scheduled tasks
+- Clear separation prevents duplicate effort and conflicting responses
 
-### 3.4 Document OpenClaw/NanoClaw boundary
-- OpenClaw: heartbeats, proactive monitoring, Gmail hooks, ops alerts
-- NanoClaw: channel runtime (Telegram, Discord, Gmail), student interaction
-- Clear separation prevents duplicate effort
+## Tier 4: Advanced Automations — COMPLETE: [ ]
+
+### 4.1 Add remaining 6 scheduled tasks
+Already have 3 seed tasks. Add the other 6 from the research:
+- Unanswered Parent Email Follow-up (weekdays 4pm)
+- Invoice & Payment Reminder Dispatch (Monday 10am)
+- Weekly Progress Report (Friday 5pm)
+- Holiday/Intensive RSVP Tracker (Tue/Thu 9am)
+- End-of-Term Student Progress Summary (manual trigger)
+- Monday Goal-Setting Nudge to Students (Monday 8am)
+All with pre-check scripts to avoid wasting API calls on quiet days.
+
+### 4.2 Fix scheduled task persistence across restarts
+- Tasks are stored in SQLite (scheduled_tasks table) — they persist
+- But the SESSION they run in expires after 24h (our TTL)
+- All tasks should use context_mode: 'isolated' (fresh session each run)
+- Add a startup verification: on NanoClaw boot, log active task count
+
+### 4.3 Create supporting data files for tasks
+Tasks reference files like students.md, invoices.md, attendance.md, etc.
+- Write a Supabase query script that populates these files on a schedule
+- Or teach Andy to query Supabase directly (MCP is already configured)
+
+## Tier 5: Agent Swarm — COMPLETE: [ ]
+
+### 5.1 Create Telegram bot pool via BotFather
+- Create 3-4 bots: @beam_maths_bot, @beam_english_bot, @beam_science_bot, @beam_ops_bot
+- Each gets its own identity in Telegram group conversations
+
+### 5.2 Install add-telegram-swarm skill
+- `git fetch upstream skill/add-telegram-swarm && git merge upstream/skill/add-telegram-swarm`
+- Configure TELEGRAM_BOT_POOL with the new bot tokens
+- Each sub-agent appears as a named bot when responding
+
+### 5.3 Configure swarm routing
+- Maths questions → @beam_maths_bot (Opus for quality)
+- English questions → @beam_english_bot
+- Science questions → @beam_science_bot
+- Ops/admin → @beam_ops_bot (Sonnet for speed)
+
+## Tier 6: Production Hardening — COMPLETE: [ ]
+
+### 6.1 Automated backups
+- Cron job on Mac Mini: daily backup of groups/ and store/messages.db
+- Destination: ~/nanoclaw-backups/ with 30-day rotation
+- `0 2 * * * tar czf ~/nanoclaw-backups/nanoclaw-$(date +\%Y\%m\%d).tar.gz -C ~/nanoclaw groups/ store/`
+
+### 6.2 Log rotation
+- /tmp/com.beam.nanoclaw.stdout.log and stderr.log grow forever
+- Add logrotate or a cron job: `0 3 * * * truncate -s 0 /tmp/com.beam.nanoclaw.*.log`
+- Or switch to the logs/ directory with date-based rotation
+
+### 6.3 Health monitoring
+- Cron job that checks if NanoClaw process is running
+- If down: restart via launchctl and send Telegram alert to TK
+- `*/5 * * * * pgrep -f "nanoclaw/dist/index.js" || (launchctl kickstart gui/$(id -u)/com.beam.nanoclaw && curl -s "https://api.telegram.org/bot.../sendMessage?chat_id=...&text=NanoClaw+restarted")`
+
+### 6.4 Cost tracking
+- Daily scheduled task that queries Anthropic API usage
+- Reports spend via Telegram: "Today's API cost: $X.XX (budget: $10/day)"
+- Alert if approaching daily budget ceiling
+
+### 6.5 Upstream sync schedule
+- Monthly: `git fetch upstream && git log upstream/main --oneline -10` to check for updates
+- Use /update-nanoclaw skill for selective cherry-picks
 
 ## 9 Recommended Scheduled Tasks
 

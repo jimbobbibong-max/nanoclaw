@@ -11,6 +11,8 @@ import {
   OnInboundMessage,
   RegisteredGroup,
 } from '../types.js';
+import { processImage } from '../image.js';
+import { resolveGroupFolderPath } from '../group-folder.js';
 
 export interface TelegramChannelOpts {
   onMessage: OnInboundMessage;
@@ -201,7 +203,53 @@ export class TelegramChannel implements Channel {
       });
     };
 
-    this.bot.on('message:photo', (ctx: any) => storeNonText(ctx, '[Photo]'));
+    this.bot.on('message:photo', async (ctx: any) => {
+      const chatJid = `tg:${ctx.chat.id}`;
+      const group = this.opts.registeredGroups()[chatJid];
+      if (!group) return;
+
+      const timestamp = new Date(ctx.message.date * 1000).toISOString();
+      const senderName =
+        ctx.from?.first_name ||
+        ctx.from?.username ||
+        ctx.from?.id?.toString() ||
+        'Unknown';
+      const caption = ctx.message.caption || '';
+
+      const isGroup =
+        ctx.chat.type === 'group' || ctx.chat.type === 'supergroup';
+      this.opts.onChatMetadata(chatJid, timestamp, undefined, 'telegram', isGroup);
+
+      // Get the largest photo size (last in array)
+      const photos = ctx.message.photo;
+      const photo = photos[photos.length - 1];
+      let content = `[Photo]${caption ? ` ${caption}` : ''}`;
+
+      try {
+        const file = await this.bot!.api.getFile(photo.file_id);
+        const fileUrl = `https://api.telegram.org/file/bot${this.botToken}/${file.file_path}`;
+        const response = await fetch(fileUrl);
+        const buffer = Buffer.from(await response.arrayBuffer());
+        const groupDir = resolveGroupFolderPath(group.folder);
+        const processed = await processImage(buffer, groupDir, caption);
+        if (processed) {
+          content = processed.content;
+          logger.info({ chatJid, file: processed.relativePath }, 'Telegram photo processed');
+        }
+      } catch (err) {
+        logger.warn({ chatJid, err }, 'Failed to process Telegram photo, using placeholder');
+      }
+
+      this.opts.onMessage(chatJid, {
+        id: ctx.message.message_id.toString(),
+        chat_jid: chatJid,
+        sender: ctx.from?.id?.toString() || '',
+        sender_name: senderName,
+        content,
+        timestamp,
+        is_from_me: false,
+      });
+    });
     this.bot.on('message:video', (ctx: any) => storeNonText(ctx, '[Video]'));
     this.bot.on('message:voice', (ctx: any) =>
       storeNonText(ctx, '[Voice message]'),
