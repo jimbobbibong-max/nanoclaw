@@ -12,6 +12,7 @@ import {
   MAX_MESSAGES_PER_PROMPT,
   ONECLI_URL,
   POLL_INTERVAL,
+  SESSION_TTL_SECONDS,
   TIMEZONE,
 } from './config.js';
 import './channels/index.js';
@@ -30,6 +31,7 @@ import {
   ensureContainerRuntimeRunning,
 } from './container-runtime.js';
 import {
+  clearSession,
   getAllChats,
   getAllRegisteredGroups,
   getAllSessions,
@@ -38,6 +40,7 @@ import {
   getMessagesSince,
   getNewMessages,
   getRouterState,
+  getSessionAge,
   initDatabase,
   setRegisteredGroup,
   setRouterState,
@@ -341,7 +344,20 @@ async function runAgent(
   onOutput?: (output: ContainerOutput) => Promise<void>,
 ): Promise<'success' | 'error'> {
   const isMain = group.isMain === true;
-  const sessionId = sessions[group.folder];
+  let sessionId: string | undefined = sessions[group.folder];
+
+  if (sessionId) {
+    const ageSeconds = getSessionAge(group.folder);
+    if (ageSeconds !== undefined && ageSeconds > SESSION_TTL_SECONDS) {
+      logger.info(
+        { group: group.folder, ageHours: Math.round(ageSeconds / 3600) },
+        'Session exceeded TTL — starting fresh session',
+      );
+      clearSession(group.folder);
+      delete sessions[group.folder];
+      sessionId = undefined;
+    }
+  }
 
   // Update tasks snapshot for container to read (filtered by group)
   const tasks = getAllTasks();

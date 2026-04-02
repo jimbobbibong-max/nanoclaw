@@ -71,7 +71,8 @@ function createSchema(database: Database.Database): void {
     );
     CREATE TABLE IF NOT EXISTS sessions (
       group_folder TEXT PRIMARY KEY,
-      session_id TEXT NOT NULL
+      session_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
     CREATE TABLE IF NOT EXISTS registered_groups (
       jid TEXT PRIMARY KEY,
@@ -145,6 +146,14 @@ function createSchema(database: Database.Database): void {
     );
   } catch {
     /* columns already exist */
+  }
+
+  try {
+    database.exec(
+      `ALTER TABLE sessions ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now'))`,
+    );
+  } catch {
+    /* column already exists */
   }
 }
 
@@ -557,8 +566,21 @@ export function getSession(groupFolder: string): string | undefined {
 
 export function setSession(groupFolder: string, sessionId: string): void {
   db.prepare(
-    'INSERT OR REPLACE INTO sessions (group_folder, session_id) VALUES (?, ?)',
+    "INSERT OR REPLACE INTO sessions (group_folder, session_id, created_at) VALUES (?, ?, datetime('now'))",
   ).run(groupFolder, sessionId);
+}
+
+export function getSessionAge(groupFolder: string): number | undefined {
+  const row = db
+    .prepare(
+      "SELECT (julianday('now') - julianday(created_at)) * 86400 AS age_seconds FROM sessions WHERE group_folder = ?",
+    )
+    .get(groupFolder) as { age_seconds: number } | undefined;
+  return row?.age_seconds;
+}
+
+export function clearSession(groupFolder: string): void {
+  db.prepare('DELETE FROM sessions WHERE group_folder = ?').run(groupFolder);
 }
 
 export function getAllSessions(): Record<string, string> {
