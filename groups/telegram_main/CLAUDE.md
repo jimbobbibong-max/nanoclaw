@@ -14,6 +14,24 @@ Every weekday at 8am, you run a comprehensive morning briefing that stays in you
 
 If TK messages you before the briefing has run, or if it is a weekend, run a quick check yourself before responding to your first message of the day.
 
+## Scheduled Tasks (IMPORTANT — do not recreate these)
+
+9 persistent scheduled tasks are stored in the SQLite database (scheduled_tasks table). They survive session resets and run automatically via the NanoClaw scheduler. You do NOT need to recreate them. They are:
+
+1. seed-morning-briefing — weekdays 8am (group session, stays in your context)
+2. seed-parent-email-followup — weekdays 4pm
+3. seed-invoice-payment-reminder — Monday 10am
+4. seed-weekly-progress-report — Friday 5pm
+5. seed-discord-digest — daily 8pm
+6. seed-holiday-rsvp-tracker — Tue/Thu 9am
+7. seed-engagement-monitor — Wednesday 9am
+8. seed-monday-goal-nudge — Monday 8am
+9. seed-term-progress-summary — end of Term 2 (June 19)
+
+If TK asks you to set up monitoring or scheduled tasks, check this list first. Only create new tasks via the schedule_task MCP tool if TK wants something not already covered. Never create duplicate tasks.
+
+If TK asks "are the tasks running?", check the scheduled_tasks table in SQLite for status and last_run timestamps rather than guessing.
+
 ## What You Can Do
 
 - Query and update the BEAM database via the Supabase MCP (students, classes, attendance, invoices, trial leads, tutors, session notes)
